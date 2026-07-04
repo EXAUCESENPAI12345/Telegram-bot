@@ -1,28 +1,27 @@
 import os
 import logging
-from flask import Flask
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+from flask import Flask
 
 logging.basicConfig(level=logging.INFO)
-TOKEN = os.getenv("BOT_TOKEN") # Mets ton token dans Render > Environment
+TOKEN = os.getenv("BOT_TOKEN")
 
-app_flask = Flask(__name__)
+app = Flask(__name__)
 
-@app_flask.route("/")
+@app.route("/")
 def home():
-    return "Bot is alive"
+    return "Bot is running"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Salut Beni, bot en ligne ✅")
+    await update.message.reply_text("Salut Beni ✅ Bot v21 en ligne")
 
 def main():
     application = Application.builder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     
-    # Pour Render on utilise Webhook
     PORT = int(os.getenv("PORT", 10000))
-    WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL")
+    WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL") # Render te donne ça auto
     
     application.run_webhook(
         listen="0.0.0.0",
