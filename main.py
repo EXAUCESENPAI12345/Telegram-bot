@@ -1,46 +1,35 @@
 import os
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+import logging
+from flask import Flask
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-TOKEN = os.environ.get("TOKEN")
+logging.basicConfig(level=logging.INFO)
+TOKEN = os.getenv("BOT_TOKEN") # Mets ton token dans Render > Environment
+
+app_flask = Flask(__name__)
+
+@app_flask.route("/")
+def home():
+    return "Bot is alive"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        ["🛒 Achat", "🎮 Jeux"],
-        ["💰 Finance", "⚙️ Admin"]
-    ]
-
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-    await update.message.reply_text(
-        "Bienvenue 🤖\nChoisis une option :",
-        reply_markup=reply_markup
-    )
-
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-
-    if text == "🛒 Achat":
-        await update.message.reply_text("Achat 🛒 actif")
-    elif text == "🎮 Jeux":
-        await update.message.reply_text("Jeux 🎮 actif")
-    elif text == "💰 Finance":
-        await update.message.reply_text("Finance 💰 actif")
-    elif text == "⚙️ Admin":
-        await update.message.reply_text("Admin ⚙️ protégé")
-    else:
-        await update.message.reply_text("Commande inconnue ❌")
+    await update.message.reply_text("Salut Beni, bot en ligne ✅")
 
 def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    print("Bot en ligne 🚀")
-
-    # IMPORTANT: lancement propre
-    app.run_polling(drop_pending_updates=True)
+    application = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    
+    # Pour Render on utilise Webhook
+    PORT = int(os.getenv("PORT", 10000))
+    WEBHOOK_URL = os.getenv("RENDER_EXTERNAL_URL")
+    
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
+    )
 
 if __name__ == "__main__":
     main()
