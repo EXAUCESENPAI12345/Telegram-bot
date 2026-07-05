@@ -4,15 +4,17 @@ from telegram.ext import Application, CommandHandler, MessageHandler, ContextTyp
 
 TOKEN = os.getenv("BOT_TOKEN")
 
+VERSION = "6.0.1"
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Bienvenue sur NexamPay 🚀")
+    await update.message.reply_text(f"NexamPay v{VERSION} 🚀\nBot en ligne")
 
 async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"Message reçu: {update.message.text}")
+    await update.message.reply_text(f"[v{VERSION}] Tu as dit: {update.message.text}")
 
 def main():
     if not TOKEN:
-        print("TOKEN manquant")
+        print("❌ TOKEN manquant")
         return
 
     app = Application.builder().token(TOKEN).build()
@@ -20,7 +22,7 @@ def main():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle))
 
-    print("NexamPay en ligne 🚀")
+    print(f"NexamPay v{VERSION} démarré 🚀")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
